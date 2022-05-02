@@ -10,7 +10,7 @@ make all
 
 echo ""
 echo "make run"
-timeout 30 make run 2>&1
+timeout 180 make run 2>&1
 #timeout 180 make run 2>&1
 
 echo ""
