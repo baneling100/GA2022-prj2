@@ -333,10 +333,27 @@ void process() {
 
 void printOutput() {
 	ICHR best = Gen.ichrs[0];
+
+	// TODO: delete before submission
 	printf("%d ", best.score);
+	bool answer[MAX_V];
 	for(int i=0; i<V; i++) {
-		printf("%d", (int)best.chr->genes[i]);
+		answer[RenumberInv[i]] = best.chr->genes[i];
 	}
+	for(int i=1; i<=V; i++) {
+		printf("%d", (int)answer[i]);
+	}
+	printf(" ");
+
+	bool isFirst = true;
+	for(int i=1; i<=V; i++) {
+		if (answer[i]) {
+			if(not isFirst) printf(" ");
+			if(isFirst) isFirst = false;
+			printf("%d", i);
+		}
+	}
+
 	puts("");
 }
 
