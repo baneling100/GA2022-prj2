@@ -11,7 +11,7 @@ const double TIME_LIMIT_SEC = 29.5 * 6;
 
 // parameters
 const int INIT_NUMBER_OF_CHRS = 1024;
-const int MAXIMUM_NUMBER_OF_CHRS = 1024 * 10;
+const int MAXIMUM_NUMBER_OF_CHRS = 1024 * 100;
 const int NUMBER_OF_NEW_CHRS = 256;
 //const double GENERATION_GAP = 256. / NUMBER_OF_CHRS;
 
@@ -30,13 +30,6 @@ int RenumberedEdges[MAX_E][3];
 
 clock_t startsAt;
 mt19937 gen;
-
-int TwoPowerVMinusOne = 1;
-
-inline int getComplementHash(int hash) {
-	if (hash > TwoPowerVMinusOne)  return MOD - (hash - TwoPowerVMinusOne);
-	return TwoPowerVMinusOne - hash;
-}
 
 // chromosome
 class CHR {	
@@ -69,12 +62,12 @@ public:
 		return newChr;
 	}
 	int hash() const {
-		int res = 0;
+		int res = 1;
 		for(int i=0; i<V; i++) {
 			res = res * 2 + genes[i];
 			if (res >= MOD) res -= MOD;
 		}
-		return min(res, getComplementHash(res));
+		return res;
 	}
 };
 
@@ -116,13 +109,6 @@ void getInput() {
 		Ed[a].push_back(b);
 		Ed[b].push_back(a);
 	}
-
-	for(int i=0; i<V; i++) {
-		TwoPowerVMinusOne *= 2;
-		TwoPowerVMinusOne %= MOD;
-	}
-	TwoPowerVMinusOne += MOD - 1;
-	TwoPowerVMinusOne %= MOD;
 }
 
 vector<int> degree(MAX_V, 0);
@@ -264,12 +250,18 @@ struct GEN {
 		int totalChrs = numberOfChrs + NUMBER_OF_NEW_CHRS;
 		sort(ichrs, ichrs + totalChrs);
 
+		// TODO make fast
+		ICHR test[MAXIMUM_NUMBER_OF_CHRS + NUMBER_OF_NEW_CHRS];
+		test[0] = ichrs[0];
 		int ichrsCnt = 1;
 		for(int i=1; i<totalChrs; i++) {
 			if (ichrs[i].score == ichrs[i-1].score && ichrs[i].hash == ichrs[i-1].hash)
 				delete ichrs[i].chr;
 			else
-				ichrs[ichrsCnt++] = ichrs[i];
+				test[ichrsCnt++] = ichrs[i];
+		}
+		for(int i=0; i<ichrsCnt; i++) {
+			ichrs[i] = test[i];
 		}
 
 		// if best score not incresing, increse number of chrs.
@@ -355,7 +347,7 @@ void printOutput() {
 	ICHR best = Gen.ichrs[0];
 
 	// TODO: delete before submission
-	printf("%4d [Gen: %7d] ", best.score, Gen.genCnt);
+	printf("%d ", best.score);
 	bool answer[MAX_V];
 	for(int i=0; i<V; i++) {
 		answer[RenumberInv[i]] = best.chr->genes[i];
