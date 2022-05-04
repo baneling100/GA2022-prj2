@@ -11,7 +11,7 @@ const double FITNESS_CONSTANT = 10;
 const int FITNESS_GROUP = 8;
 
 // parameters
-const int INIT_NUMBER_OF_CHRS = 1024;
+const int INIT_NUMBER_OF_CHRS = 1024 * 10;
 const int MAXIMUM_NUMBER_OF_CHRS = 1024 * 100;
 const int NUMBER_OF_NEW_CHRS = 256;
 //const double GENERATION_GAP = 256. / NUMBER_OF_CHRS;
@@ -282,14 +282,14 @@ struct GEN {
 				ichrs[ichrsCnt++] = ichrs[i];
 		}
 
-		// if best score not incresing, increse number of chrs.
-		if (ichrsCnt <= MAXIMUM_NUMBER_OF_CHRS && numberOfChrs - INIT_NUMBER_OF_CHRS < bestScoreKeptGenCount * 2) {
-			numberOfChrs = ichrsCnt;
-			for(int i=0; i<numberOfChrs; i++) {
-				chrs[i] = ichrs[i].chr;
-			}
-			return;
-		}
+		// // if best score not incresing, increse number of chrs.
+		// if (ichrsCnt <= MAXIMUM_NUMBER_OF_CHRS && numberOfChrs - INIT_NUMBER_OF_CHRS < bestScoreKeptGenCount * 2) {
+		// 	numberOfChrs = ichrsCnt;
+		// 	for(int i=0; i<numberOfChrs; i++) {
+		// 		chrs[i] = ichrs[i].chr;
+		// 	}
+		// 	return;
+		// }
 
 		for(int i=0; i<numberOfChrs; i++) {
 			chrs[i] = ichrs[i].chr;
