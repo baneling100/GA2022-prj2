@@ -11,7 +11,7 @@ const double TIME_LIMIT_SEC = 29.5 * 6;
 
 // parameters
 const int INIT_NUMBER_OF_CHRS = 1024;
-const int MAXIMUM_NUMBER_OF_CHRS = 1024 * 10;
+const int MAXIMUM_NUMBER_OF_CHRS = 1024 * 100;
 const int NUMBER_OF_NEW_CHRS = 256;
 //const double GENERATION_GAP = 256. / NUMBER_OF_CHRS;
 
@@ -140,16 +140,19 @@ void dfs(int v, int p) {
 }
 
 using pi = pair<int, int>;
+int st;
 void renumber() {
 	// TODO any more good algorithm ?
 	int prenumber[MAX_V + 1];
 
 	priority_queue<pi, vector<pi>, greater<pi>> Q;
-	int st = gen() % V + 1;
+	vector<int> visitOrder;
+	st = gen() % V + 1;
 	Q.emplace(-0, st);
 	while(!Q.empty()) {
 		int v = Q.top().second; Q.pop();
 		if(vis[v]) continue;
+		visitOrder.push_back(v);
 		vis[v] = true;
 		prenumber[v] = renumberV++;
 		for(int w: Ed[v]) {
@@ -164,6 +167,7 @@ void renumber() {
 	
 	vis = vector<bool>(MAX_V, false);
 	renumberV = 0;
+	//for(int i: visitOrder) {
 	for(int i=1; i<=V; i++) {
 		dfs(i, -1);
 	}
@@ -211,13 +215,15 @@ CHR* mkRandomChr() {
 struct ICHR {
 	int score;
 	int hash;
+	int age;
 	CHR* chr;
 
 	ICHR() {
 	}
-	ICHR(CHR* chr) {
+	ICHR(CHR* chr, int age) {
 		this->score = getCutValue(chr);
 		this->hash = chr->hash();
+		this->age = age;
 		this->chr = chr;
 	}
 };
@@ -233,6 +239,7 @@ struct GEN {
 	int numberOfChrs;
 	int bestScore;
 	int bestScoreKeptGenCount;
+	double bestScoreLastUpdatedAt = 0;
 	CHR *chrs[MAXIMUM_NUMBER_OF_CHRS], *newChrs[NUMBER_OF_NEW_CHRS];
 	// decresing order by score;
 	ICHR ichrs[MAXIMUM_NUMBER_OF_CHRS + NUMBER_OF_NEW_CHRS];
@@ -243,7 +250,7 @@ struct GEN {
 		this->bestScoreKeptGenCount = 0;
 		for(int i=0; i<numberOfChrs; i++) {
 			chrs[i] = mkRandomChr();
-			ichrs[i] = ICHR(chrs[i]);
+			ichrs[i] = ICHR(chrs[i], 0);
 		}
 		sort(ichrs, ichrs + numberOfChrs);
 		for(int i=0; i<numberOfChrs; i++) {
@@ -259,14 +266,14 @@ struct GEN {
 
 	void replace() {
 		for(int i=0; i<NUMBER_OF_NEW_CHRS; i++) {
-			ichrs[numberOfChrs + i] = ICHR(newChrs[i]);
+			ichrs[numberOfChrs + i] = ICHR(newChrs[i], genCnt);
 		}
 		int totalChrs = numberOfChrs + NUMBER_OF_NEW_CHRS;
 		sort(ichrs, ichrs + totalChrs);
 
 		int ichrsCnt = 1;
 		for(int i=1; i<totalChrs; i++) {
-			if (ichrs[i].score == ichrs[i-1].score && ichrs[i].hash == ichrs[i-1].hash)
+			if (ichrs[i].score == ichrs[i-1].score && ichrs[i].hash == ichrs[i-1].hash && ichrs[i].age < genCnt - 50)
 				delete ichrs[i].chr;
 			else
 				ichrs[ichrsCnt++] = ichrs[i];
@@ -286,6 +293,16 @@ struct GEN {
 		// for(int i=numberOfChrs - added; i<numberOfChrs; i++) {
 		// 	swap(ichrs[i], ichrs[i+added]);
 		// }
+		
+		// if it is too young, rescue it.
+		// if (genCnt >= 1000) {
+		// 	int swapIx = numberOfChrs - 1;
+		// 	for(int i=ichrsCnt-1; i>=numberOfChrs; i--) {
+		// 		if (ichrs[i].age >= genCnt - 100) {
+		// 			swap(ichrs[swapIx--], ichrs[i]);
+		// 		}
+		// 	}
+		// }
 
 		for(int i=0; i<numberOfChrs; i++) {
 			chrs[i] = ichrs[i].chr;
@@ -296,8 +313,11 @@ struct GEN {
 
 		if (bestScore == ichrs[0].score)
 			bestScoreKeptGenCount++;
-		else
+		else {
+			clock_t current = clock();
+			bestScoreLastUpdatedAt = (current - startsAt) * 1. / CLOCKS_PER_SEC;
 			bestScoreKeptGenCount = 0;
+		}
 		bestScore = max(bestScore, ichrs[0].score);
 	}
 };
@@ -355,7 +375,8 @@ void printOutput() {
 	ICHR best = Gen.ichrs[0];
 
 	// TODO: delete before submission
-	printf("%4d [Gen: %7d] ", best.score, Gen.genCnt);
+	int a = (int)(Gen.bestScoreLastUpdatedAt); double b = Gen.bestScoreLastUpdatedAt - a;
+	printf("%4d [Gen: %7d St: %4d Last Updated At: %3d + %3f] ", best.score, Gen.genCnt, st, a, b);
 	bool answer[MAX_V];
 	for(int i=0; i<V; i++) {
 		answer[RenumberInv[i]] = best.chr->genes[i];
