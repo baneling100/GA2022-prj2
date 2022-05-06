@@ -29,7 +29,7 @@ int Renumber[MAX_V];
 int RenumberInv[MAX_V];
 int RenumberedEdges[MAX_E][3];
 
-clock_t startsAt;
+double startsAt;
 mt19937 gen;
 
 int TwoPowerVMinusOne = 1;
@@ -42,6 +42,17 @@ inline int getComplementHash(int hash) {
 // [0, 1]
 inline double getRandDouble() {
 	return gen() * 1. / UINT_MAX;
+}
+
+void myerror() {
+  printf("%s\n", std::strerror(errno));
+  std::exit(errno);
+}
+
+double get_mytime() {
+  struct timespec ts;
+  if (clock_gettime(CLOCK_REALTIME, &ts)) myerror();
+  return ts.tv_sec + ts.tv_nsec * 1e-9;
 }
 
 // chromosome
@@ -102,7 +113,7 @@ using ti = tuple<int, int, int>;
 
 void getInput() {
 	srand(time(NULL));
-	startsAt = clock();
+	startsAt = get_mytime();
 	random_device rd;
 	gen = mt19937(rd());
 
@@ -301,8 +312,8 @@ struct GEN {
 		if (bestScore == ichrs[0].score)
 			bestScoreKeptGenCount++;
 		else {
-			clock_t current = clock();
-			bestScoreLastUpdatedAt = (current - startsAt) * 1. / CLOCKS_PER_SEC;
+			double current = get_mytime();
+			bestScoreLastUpdatedAt = current - startsAt;
 			bestScoreKeptGenCount = 0;
 		}
 		bestScore = max(bestScore, ichrs[0].score);
@@ -316,13 +327,13 @@ void process() {
 	bool timeLimitExceeded = false;
 	bool stopCondition = false;
 
-	fprintf(stderr, "Gen\tHightest Function Value\tAverage Function Value\tLowest Function Value\tTime (s)");
+	// fprintf(stderr, "Gen\tHightest Function Value\tAverage Function Value\tLowest Function Value\tTime (s)");
 #ifdef PRINT_DETAIL
 	for(int i=0; i<NUMBER_OF_CHRS; i++) {
 		fprintf(stderr, "\tchr%02d", i);
 	}
 #endif
-	fprintf(stderr, "\n");
+	// fprintf(stderr, "\n");
 	do {
 		int numberOfNews = NUMBER_OF_NEW_CHRS;
 		#ifdef DEBUG
@@ -341,18 +352,18 @@ void process() {
 
 		Gen.replace();
 
-		clock_t current = clock();
-		double duration = (current - startsAt) * 1. / CLOCKS_PER_SEC;
+		double current = get_mytime();
+		double duration = current - startsAt;
 		timeLimitExceeded = duration > TIME_LIMIT_SEC;
 		stopCondition = timeLimitExceeded;
 
-		if (Gen.genCnt % 50 == 0) {
-			fprintf(stderr, "%d\t%d\t%f\t%d\t%f\t%d\n", Gen.genCnt, Gen.ichrs[0].score, Gen.averageScore(), Gen.ichrs[Gen.numberOfChrs-1].score, duration, Gen.numberOfChrs);
-			for(int i=0; i<5; i++) {
-				fprintf(stderr, "(%d %d) ", Gen.ichrs[i].score, Gen.ichrs[i].hash);
-			}
-			fprintf(stderr, "\n");
-		}
+		// if (Gen.genCnt % 50 == 0) {
+		// 	fprintf(stderr, "%d\t%d\t%f\t%d\t%f\t%d\n", Gen.genCnt, Gen.ichrs[0].score, Gen.averageScore(), Gen.ichrs[Gen.numberOfChrs-1].score, duration, Gen.numberOfChrs);
+		// 	for(int i=0; i<5; i++) {
+		// 		fprintf(stderr, "(%d %d) ", Gen.ichrs[i].score, Gen.ichrs[i].hash);
+		// 	}
+		// 	fprintf(stderr, "\n");
+		// }
 		Gen.genCnt++;
 	}
 	while(not stopCondition);
