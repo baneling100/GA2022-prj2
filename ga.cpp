@@ -316,13 +316,13 @@ void process() {
 	bool timeLimitExceeded = false;
 	bool stopCondition = false;
 
-	fprintf(stderr, "Gen\tHightest Function Value\tAverage Function Value\tLowest Function Value\tTime (s)");
+	// fprintf(stderr, "Gen\tHightest Function Value\tAverage Function Value\tLowest Function Value\tTime (s)");
 #ifdef PRINT_DETAIL
 	for(int i=0; i<NUMBER_OF_CHRS; i++) {
 		fprintf(stderr, "\tchr%02d", i);
 	}
 #endif
-	fprintf(stderr, "\n");
+	// fprintf(stderr, "\n");
 	do {
 		int numberOfNews = NUMBER_OF_NEW_CHRS;
 		#ifdef DEBUG
@@ -346,13 +346,13 @@ void process() {
 		timeLimitExceeded = duration > TIME_LIMIT_SEC;
 		stopCondition = timeLimitExceeded;
 
-		if (Gen.genCnt % 50 == 0) {
-			fprintf(stderr, "%d\t%d\t%f\t%d\t%f\t%d\n", Gen.genCnt, Gen.ichrs[0].score, Gen.averageScore(), Gen.ichrs[Gen.numberOfChrs-1].score, duration, Gen.numberOfChrs);
-			for(int i=0; i<5; i++) {
-				fprintf(stderr, "(%d %d) ", Gen.ichrs[i].score, Gen.ichrs[i].hash);
-			}
-			fprintf(stderr, "\n");
-		}
+		// if (Gen.genCnt % 50 == 0) {
+		// 	fprintf(stderr, "%d\t%d\t%f\t%d\t%f\t%d\n", Gen.genCnt, Gen.ichrs[0].score, Gen.averageScore(), Gen.ichrs[Gen.numberOfChrs-1].score, duration, Gen.numberOfChrs);
+		// 	for(int i=0; i<5; i++) {
+		// 		fprintf(stderr, "(%d %d) ", Gen.ichrs[i].score, Gen.ichrs[i].hash);
+		// 	}
+		// 	fprintf(stderr, "\n");
+		// }
 		Gen.genCnt++;
 	}
 	while(not stopCondition);
